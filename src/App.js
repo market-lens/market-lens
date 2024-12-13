@@ -6,21 +6,29 @@ function App() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [data, setData] = useState(null);
-
-  const API_KEY = process.env.REACT_APP_POLYGON_API_KEY;
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+    console.log('Submitting form with:', { ticker, startDate, endDate });
+
     try {
       const response = await axios.get(
-        `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${startDate}/${endDate}`,
+        `https://e9o7l3ryxg.execute-api.us-east-2.amazonaws.com/prod/v2/aggs/ticker/${ticker}/range/1/day/${startDate}/${endDate}`,
         {
-          params: { adjusted: 'true', sort: 'asc', limit: 120, apiKey: API_KEY },
+          params: { adjusted: 'true', sort: 'asc' },
         }
       );
+      console.log('API Response:', response.data);
       setData(response.data);
     } catch (error) {
-      console.error(error);
+      console.error('API Error:', error);
+      setError('Failed to fetch data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,7 +38,7 @@ function App() {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Ticker Symbol"
+          placeholder="Ticker"
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
           required
@@ -47,11 +55,13 @@ function App() {
           onChange={(e) => setEndDate(e.target.value)}
           required
         />
-        <button type="submit">Fetch Data</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Fetching...' : 'Fetch Data'}
+        </button>
       </form>
-      {data && (
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {data && data.results && (
         <div>
-          <h2>Results for {ticker.toUpperCase()}</h2>
           {data.results.map((item) => (
             <div key={item.t}>
               <p>Date: {new Date(item.t).toLocaleDateString()}</p>
