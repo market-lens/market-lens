@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+import { auth } from "../lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Page() {
   const [ticker, setTicker] = useState("");
@@ -10,6 +13,17 @@ export default function Page() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      alert("Signed in successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Sign-in failed.");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +50,14 @@ export default function Page() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
       <h1 className="text-5xl font-bold mb-4">Welcome to Market Lens</h1>
       <p className="text-xl mb-8">Your go-to app for stock data fetching and analysis.</p>
-      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+      <button
+        onClick={handleSignIn}
+        className="flex items-center justify-center space-x-2 p-2 bg-white text-blue-500 font-semibold rounded mt-4"
+      >
+        <FcGoogle size={20} />
+        <span>Sign in with Google</span>
+      </button>
+      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm mt-8">
         <input
           type="text"
           value={ticker}
